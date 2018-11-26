@@ -181,12 +181,13 @@ namespace Bitmex.Client.Websocket.Websockets
                 IsRunning = true;
                 _reconnectionSubject.OnNext(type);
 #pragma warning disable 4014
-                Listen(_client, token);
+                await Listen(_client, token);
 #pragma warning restore 4014               
                 ActivateLastChance();
             }
             catch (Exception e)
             {
+                //
                 Log.Error(e, L("Exception while connecting. " +
                                $"Waiting {ErrorReconnectTimeoutMs/1000} sec before next reconnection try."));
                 await Task.Delay(ErrorReconnectTimeoutMs, token);
@@ -249,7 +250,8 @@ namespace Bitmex.Client.Websocket.Websockets
             }
             catch (Exception e)
             {
-                Log.Error(e, L("Error while listening to websocket stream"));
+                //Log.Error(e, L("Error while listening to websocket stream"));
+                throw e;
             }
         }
 

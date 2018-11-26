@@ -61,6 +61,7 @@ namespace Bitmex.Client.Websocket.Sample
                     communicator.Start();
 
                     ExitEvent.WaitOne();
+                    //
                 }
             }
 
@@ -74,11 +75,11 @@ namespace Bitmex.Client.Websocket.Sample
         {
             await client.Send(new PingRequest());
             //await client.Send(new BookSubscribeRequest("XBTUSD"));
-            await client.Send(new TradesSubscribeRequest("XBTUSD"));
+            //await client.Send(new TradesSubscribeRequest("XBTUSD"));
             //await client.Send(new TradeBinSubscribeRequest("1m", "XBTUSD"));
             //await client.Send(new TradeBinSubscribeRequest("5m", "XBTUSD"));
             //await client.Send(new QuoteSubscribeRequest("XBTUSD"));
-            //await client.Send(new LiquidationSubscribeRequest());
+            await client.Send(new LiquidationSubscribeRequest());
 
             if (!string.IsNullOrWhiteSpace(API_SECRET))
                 await client.Send(new AuthenticationRequest(API_KEY, API_SECRET));
@@ -144,6 +145,7 @@ namespace Bitmex.Client.Websocket.Sample
                 y.Data.ToList().ForEach(x =>
                     Log.Information(
                         $"Liquadation Action: {y.Action}, OrderID: {x.OrderID}, Symbol: {x.Symbol}, Side: {x.Side}, Price: {x.Price}, LeavesQty: {x.leavesQty}"))
+                
             );
 
             client.Streams.TradeBinStream.Subscribe(y =>

@@ -28,6 +28,7 @@ namespace Bitmex.Client.Websocket.Client
             BmxValidations.ValidateInput(communicator, nameof(communicator));
 
             _communicator = communicator;
+            _communicator.ErrorReconnectTimeoutMs = 1000;
             _messageReceivedSubsciption = _communicator.MessageReceived.Subscribe(HandleMessage);
         }
 
