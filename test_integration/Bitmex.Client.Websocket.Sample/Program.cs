@@ -158,11 +158,11 @@ namespace Bitmex.Client.Websocket.Sample
         private static void OutputLiqudation(Responses.Liquidation.Liquidation x, Responses.BitmexAction action)
         {
             Log.Information( $"Liquadation Action: {action}, OrderID: {x.OrderID}, Symbol: {x.Symbol}, Side: {x.Side}, Price: {x.Price}, LeavesQty: {x.leavesQty}");
-            
+            var currTime = DateTime.Now;
             if(action == Responses.BitmexAction.Insert){
                 var dbLiquidation = new EFCoreSqlite.Liquidation{
                     OrderID = x.OrderID,
-                    DateAdded = DateTime.Now,
+                    DateAdded = currTime,
                     Symbol = x.Symbol,
                     Side = x.Side?.ToString(),
                     Price = x.Price,
@@ -189,7 +189,7 @@ namespace Bitmex.Client.Websocket.Sample
                 using (var db = new LiquidationContext()){
                     var updateDbObj = db.Liquidations.Where(y => y.OrderID == x.OrderID).FirstOrDefault();
                     if(updateDbObj != null){
-                        updateDbObj.deletedTime = DateTime.Now;
+                        updateDbObj.deletedTime = currTime;
                         db.SaveChanges();
                     }
                 }
