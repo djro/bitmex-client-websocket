@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EFCoreSqlite.Migrations
 {
     [DbContext(typeof(LiquidationContext))]
-    [Migration("20181126095347_InitialDatabase")]
+    [Migration("20181130124742_InitialDatabase")]
     partial class InitialDatabase
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -23,11 +23,19 @@ namespace EFCoreSqlite.Migrations
                     b.Property<string>("OrderID")
                         .ValueGeneratedOnAdd();
 
+                    b.Property<DateTime?>("DateAdded");
+
+                    b.Property<double?>("LatestPrice");
+
                     b.Property<double?>("Price");
 
                     b.Property<string>("Side");
 
                     b.Property<string>("Symbol");
+
+                    b.Property<DateTime?>("deletedTime");
+
+                    b.Property<long?>("lastLeavesQty");
 
                     b.Property<long?>("leavesQty");
 

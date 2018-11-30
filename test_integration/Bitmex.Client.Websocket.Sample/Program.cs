@@ -10,13 +10,14 @@ using Bitmex.Client.Websocket.Requests;
 using Bitmex.Client.Websocket.Websockets;
 using Serilog;
 using Serilog.Events;
+using EFCoreSqlite;
 
 namespace Bitmex.Client.Websocket.Sample
 {
     class Program
     {
+        private LiquidationContext _dbContext;
         private static readonly ManualResetEvent ExitEvent = new ManualResetEvent(false);
-
         private static readonly string API_KEY = "your api key";
         private static readonly string API_SECRET = "";
 
@@ -143,9 +144,7 @@ namespace Bitmex.Client.Websocket.Sample
 
             client.Streams.LiquidationStream.Subscribe(y =>
                 y.Data.ToList().ForEach(x =>
-                    Log.Information(
-                        $"Liquadation Action: {y.Action}, OrderID: {x.OrderID}, Symbol: {x.Symbol}, Side: {x.Side}, Price: {x.Price}, LeavesQty: {x.leavesQty}"))
-                
+                   OutputLiqudation(x, y.Action))                
             );
 
             client.Streams.TradeBinStream.Subscribe(y =>
@@ -154,6 +153,47 @@ namespace Bitmex.Client.Websocket.Sample
                         $"Close: {x.Close}, Volume: {x.Volume}, Trades: {x.Trades}"))
             );
 
+        }
+
+        private static void OutputLiqudation(Responses.Liquidation.Liquidation x, Responses.BitmexAction action)
+        {
+            Log.Information( $"Liquadation Action: {action}, OrderID: {x.OrderID}, Symbol: {x.Symbol}, Side: {x.Side}, Price: {x.Price}, LeavesQty: {x.leavesQty}");
+            
+            if(action == Responses.BitmexAction.Insert){
+                var dbLiquidation = new EFCoreSqlite.Liquidation{
+                    OrderID = x.OrderID,
+                    DateAdded = DateTime.Now,
+                    Symbol = x.Symbol,
+                    Side = x.Side?.ToString(),
+                    Price = x.Price,
+                    leavesQty = x.leavesQty
+                };
+
+                using(var db = new LiquidationContext()){
+                    db.Liquidations.Add(dbLiquidation);
+                    db.SaveChanges();
+                }
+            }
+            else if(action == Responses.BitmexAction.Update){
+                using (var db = new LiquidationContext()){
+                    var updateDbObj = db.Liquidations.Where(y => y.OrderID == x.OrderID).FirstOrDefault();
+                    if(updateDbObj != null){
+                        updateDbObj.LatestPrice = x.Price ?? updateDbObj.LatestPrice;
+                        updateDbObj.lastLeavesQty = x.leavesQty ?? updateDbObj.lastLeavesQty;
+
+                        db.SaveChanges();
+                    }
+                }
+            }
+            else if(action == Responses.BitmexAction.Delete){
+                using (var db = new LiquidationContext()){
+                    var updateDbObj = db.Liquidations.Where(y => y.OrderID == x.OrderID).FirstOrDefault();
+                    if(updateDbObj != null){
+                        updateDbObj.deletedTime = DateTime.Now;
+                        db.SaveChanges();
+                    }
+                }
+            }
         }
 
         private static void InitLogging()

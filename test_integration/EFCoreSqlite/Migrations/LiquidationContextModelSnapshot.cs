@@ -21,11 +21,19 @@ namespace EFCoreSqlite.Migrations
                     b.Property<string>("OrderID")
                         .ValueGeneratedOnAdd();
 
+                    b.Property<DateTime?>("DateAdded");
+
+                    b.Property<double?>("LatestPrice");
+
                     b.Property<double?>("Price");
 
                     b.Property<string>("Side");
 
                     b.Property<string>("Symbol");
+
+                    b.Property<DateTime?>("deletedTime");
+
+                    b.Property<long?>("lastLeavesQty");
 
                     b.Property<long?>("leavesQty");
 
