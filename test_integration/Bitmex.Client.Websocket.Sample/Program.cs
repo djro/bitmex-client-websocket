@@ -204,6 +204,7 @@ namespace Bitmex.Client.Websocket.Sample
             {
                 var dbTrade = new EFCoreSqlite.Trade{
                     Timestamp = x.Timestamp,
+                    Symbol = x.Symbol,
                     Side = x.Side.ToString(),
                     Size = x.Size
                 };
