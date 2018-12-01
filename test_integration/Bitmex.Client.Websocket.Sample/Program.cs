@@ -16,7 +16,7 @@ namespace Bitmex.Client.Websocket.Sample
 {
     class Program
     {
-        private BitmexDbContext _dbContext;
+        private readonly BitmexDbContext _dbContext;
         private static readonly ManualResetEvent ExitEvent = new ManualResetEvent(false);
         private static readonly string API_KEY = "your api key";
         private static readonly string API_SECRET = "";
@@ -76,7 +76,7 @@ namespace Bitmex.Client.Websocket.Sample
         {
             await client.Send(new PingRequest());
             //await client.Send(new BookSubscribeRequest("XBTUSD"));
-            //await client.Send(new TradesSubscribeRequest("XBTUSD"));
+            await client.Send(new TradesSubscribeRequest("XBTUSD"));
             //await client.Send(new TradeBinSubscribeRequest("1m", "XBTUSD"));
             //await client.Send(new TradeBinSubscribeRequest("5m", "XBTUSD"));
             //await client.Send(new QuoteSubscribeRequest("XBTUSD"));
@@ -128,8 +128,7 @@ namespace Bitmex.Client.Websocket.Sample
 
             client.Streams.TradesStream.Subscribe(y =>
                 y.Data.ToList().ForEach(x =>
-                    Log.Information($"Trade {x.Symbol} executed. Time: {x.Timestamp:mm:ss.fff}, [{x.Side}] Amount: {x.Size}, " +
-                                    $"Price: {x.Price}"))
+                    OutputTrade(x))
             );
 
             client.Streams.BookStream.Subscribe(book =>
@@ -194,6 +193,28 @@ namespace Bitmex.Client.Websocket.Sample
                     }
                 }
             }
+        }
+
+        private static void OutputTrade(Responses.Trades.Trade x)
+        {
+            Log.Information($"Trade {x.Symbol} executed. Time: {x.Timestamp:mm:ss.fff}, [{x.Side}] Amount: {x.Size}, " +
+                            $"Price: {x.Price}");
+            
+            if(x.Size >= 20000)
+            {
+                var dbTrade = new EFCoreSqlite.Trade{
+                    Timestamp = x.Timestamp,
+                    Side = x.Side.ToString(),
+                    Size = x.Size
+                };
+                using(var db = new BitmexDbContext())
+                {
+                    db.Trades.Add(dbTrade);
+                    db.SaveChanges();
+                }
+
+            }
+
         }
 
         private static void InitLogging()
