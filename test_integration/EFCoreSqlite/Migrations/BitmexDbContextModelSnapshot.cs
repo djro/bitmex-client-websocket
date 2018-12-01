@@ -7,8 +7,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace EFCoreSqlite.Migrations
 {
-    [DbContext(typeof(LiquidationContext))]
-    partial class LiquidationContextModelSnapshot : ModelSnapshot
+    [DbContext(typeof(BitmexDbContext))]
+    partial class BitmexDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
@@ -40,6 +40,33 @@ namespace EFCoreSqlite.Migrations
                     b.HasKey("OrderID");
 
                     b.ToTable("Liquidations");
+                });
+
+            modelBuilder.Entity("EFCoreSqlite.Trade", b =>
+                {
+                    b.Property<DateTime>("Timestamp");
+
+                    b.Property<string>("Symbol");
+
+                    b.Property<double?>("ForeignNotional");
+
+                    b.Property<long?>("GrossValue");
+
+                    b.Property<double?>("HomeNotional");
+
+                    b.Property<double>("Price");
+
+                    b.Property<string>("Side");
+
+                    b.Property<long>("Size");
+
+                    b.Property<string>("TickDirection");
+
+                    b.Property<string>("TrdMatchId");
+
+                    b.HasKey("Timestamp", "Symbol");
+
+                    b.ToTable("Trades");
                 });
 #pragma warning restore 612, 618
         }

@@ -16,7 +16,7 @@ namespace Bitmex.Client.Websocket.Sample
 {
     class Program
     {
-        private LiquidationContext _dbContext;
+        private BitmexDbContext _dbContext;
         private static readonly ManualResetEvent ExitEvent = new ManualResetEvent(false);
         private static readonly string API_KEY = "your api key";
         private static readonly string API_SECRET = "";
@@ -169,13 +169,13 @@ namespace Bitmex.Client.Websocket.Sample
                     leavesQty = x.leavesQty
                 };
 
-                using(var db = new LiquidationContext()){
+                using(var db = new BitmexDbContext()){
                     db.Liquidations.Add(dbLiquidation);
                     db.SaveChanges();
                 }
             }
             else if(action == Responses.BitmexAction.Update){
-                using (var db = new LiquidationContext()){
+                using (var db = new BitmexDbContext()){
                     var updateDbObj = db.Liquidations.Where(y => y.OrderID == x.OrderID).FirstOrDefault();
                     if(updateDbObj != null){
                         updateDbObj.LatestPrice = x.Price ?? updateDbObj.LatestPrice;
@@ -186,7 +186,7 @@ namespace Bitmex.Client.Websocket.Sample
                 }
             }
             else if(action == Responses.BitmexAction.Delete){
-                using (var db = new LiquidationContext()){
+                using (var db = new BitmexDbContext()){
                     var updateDbObj = db.Liquidations.Where(y => y.OrderID == x.OrderID).FirstOrDefault();
                     if(updateDbObj != null){
                         updateDbObj.deletedTime = currTime;
