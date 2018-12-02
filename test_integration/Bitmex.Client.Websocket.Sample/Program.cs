@@ -11,6 +11,7 @@ using Bitmex.Client.Websocket.Websockets;
 using Serilog;
 using Serilog.Events;
 using EFCoreSqlite;
+using Microsoft.EntityFrameworkCore;  //remove when db logic is moved
 
 namespace Bitmex.Client.Websocket.Sample
 {
@@ -157,7 +158,7 @@ namespace Bitmex.Client.Websocket.Sample
         private static void OutputLiqudation(Responses.Liquidation.Liquidation x, Responses.BitmexAction action)
         {
             Log.Information( $"Liquadation Action: {action}, OrderID: {x.OrderID}, Symbol: {x.Symbol}, Side: {x.Side}, Price: {x.Price}, LeavesQty: {x.leavesQty}");
-            var currTime = DateTime.Now;
+            var currTime = DateTime.Now.ToUniversalTime();
             if(action == Responses.BitmexAction.Insert){
                 var dbLiquidation = new EFCoreSqlite.Liquidation{
                     OrderID = x.OrderID,
@@ -200,17 +201,27 @@ namespace Bitmex.Client.Websocket.Sample
             Log.Information($"Trade {x.Symbol} executed. Time: {x.Timestamp:mm:ss.fff}, [{x.Side}] Amount: {x.Size}, " +
                             $"Price: {x.Price}");
             
-            if(x.Size >= 20000)
+            if(x.Size >= 10000)
             {
                 var dbTrade = new EFCoreSqlite.Trade{
                     Timestamp = x.Timestamp,
                     Symbol = x.Symbol,
                     Side = x.Side.ToString(),
-                    Size = x.Size
+                    Size = x.Size,
+                    Price = x.Price
                 };
                 using(var db = new BitmexDbContext())
                 {
-                    db.Trades.Add(dbTrade);
+                    var existingTrade = db.Trades.Where(y => y.Timestamp == x.Timestamp && y.Symbol == x.Symbol).FirstOrDefault();
+
+                    if(existingTrade == null)
+                    {
+                        db.Trades.Add(dbTrade);
+                    }
+                    else
+                    {
+                        existingTrade.Size += x.Size;
+                    }                   
                     db.SaveChanges();
                 }
 
