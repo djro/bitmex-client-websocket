@@ -19,6 +19,7 @@ namespace EFCoreSqlite.Migrations
                     leavesQty = table.Column<long>(nullable: true),
                     LatestPrice = table.Column<double>(nullable: true),
                     lastLeavesQty = table.Column<long>(nullable: true),
+                    numUpdates = table.Column<int>(nullable: true),
                     deletedTime = table.Column<DateTime>(nullable: true)
                 },
                 constraints: table =>

@@ -37,6 +37,8 @@ namespace EFCoreSqlite.Migrations
 
                     b.Property<long?>("leavesQty");
 
+                    b.Property<int?>("numUpdates");
+
                     b.HasKey("OrderID");
 
                     b.ToTable("Liquidations");

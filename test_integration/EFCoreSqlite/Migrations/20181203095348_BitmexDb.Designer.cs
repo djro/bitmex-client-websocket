@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EFCoreSqlite.Migrations
 {
     [DbContext(typeof(BitmexDbContext))]
-    [Migration("20181201032627_BitmexDb")]
+    [Migration("20181203095348_BitmexDb")]
     partial class BitmexDb
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -38,6 +38,8 @@ namespace EFCoreSqlite.Migrations
                     b.Property<long?>("lastLeavesQty");
 
                     b.Property<long?>("leavesQty");
+
+                    b.Property<int?>("numUpdates");
 
                     b.HasKey("OrderID");
 

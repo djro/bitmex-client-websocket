@@ -14,6 +14,7 @@ namespace EFCoreSqlite
         public long? leavesQty { get; set; }
         public double? LatestPrice {get; set;}
         public long? lastLeavesQty {get;set;}
+        public int? numUpdates {get;set;}
         public DateTime? deletedTime {get; set;}
     }
 }

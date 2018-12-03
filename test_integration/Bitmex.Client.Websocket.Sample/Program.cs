@@ -180,7 +180,7 @@ namespace Bitmex.Client.Websocket.Sample
                     if(updateDbObj != null){
                         updateDbObj.LatestPrice = x.Price ?? updateDbObj.LatestPrice;
                         updateDbObj.lastLeavesQty = x.leavesQty ?? updateDbObj.lastLeavesQty;
-
+                        updateDbObj.numUpdates = (updateDbObj.numUpdates ?? 0)  + 1;
                         db.SaveChanges();
                     }
                 }
