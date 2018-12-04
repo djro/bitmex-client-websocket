@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace EFCoreSqlite
+namespace Bitmex.Client.Websocket.EFCoreSqlite
 {
     public class BitmexDbContext: DbContext
     {

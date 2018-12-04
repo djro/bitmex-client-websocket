@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\EFCoreSqlite\EFCoreSqlite.csproj" />
+    <ProjectReference Include="..\Bitmex.Client.Websocket.EFCoreSqlite\EFCoreSqlite.csproj" />
   </ItemGroup>
 
 </Project>

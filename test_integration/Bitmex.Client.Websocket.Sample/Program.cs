@@ -10,7 +10,7 @@ using Bitmex.Client.Websocket.Requests;
 using Bitmex.Client.Websocket.Websockets;
 using Serilog;
 using Serilog.Events;
-using EFCoreSqlite;
+using Bitmex.Client.Websocket.EFCoreSqlite;
 using Microsoft.EntityFrameworkCore;  //remove when db logic is moved
 
 namespace Bitmex.Client.Websocket.Sample

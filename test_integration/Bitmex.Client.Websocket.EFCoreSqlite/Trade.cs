@@ -1,6 +1,6 @@
 using System;
 
-namespace EFCoreSqlite
+namespace Bitmex.Client.Websocket.EFCoreSqlite
 {
     public class Trade
     {
