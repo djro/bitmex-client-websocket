@@ -10,4 +10,8 @@
     <PackageReference Include="microsoft.entityframeworkcore.sqlite" Version="2.1.4" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Bitmex.Client.Websocket\Bitmex.Client.Websocket.csproj" />
+  </ItemGroup>
+
 </Project>

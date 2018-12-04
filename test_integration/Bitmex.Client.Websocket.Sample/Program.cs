@@ -11,14 +11,13 @@ using Bitmex.Client.Websocket.Websockets;
 using Serilog;
 using Serilog.Events;
 using Bitmex.Client.Websocket.EFCoreSqlite;
-using Microsoft.EntityFrameworkCore;  //remove when db logic is moved
 
 namespace Bitmex.Client.Websocket.Sample
 {
     class Program
     {
-        private readonly BitmexDbContext _dbContext;
         private static readonly ManualResetEvent ExitEvent = new ManualResetEvent(false);
+        
         private static readonly string API_KEY = "your api key";
         private static readonly string API_SECRET = "";
 
@@ -63,7 +62,6 @@ namespace Bitmex.Client.Websocket.Sample
                     communicator.Start();
 
                     ExitEvent.WaitOne();
-                    //
                 }
             }
 
@@ -158,75 +156,14 @@ namespace Bitmex.Client.Websocket.Sample
         private static void OutputLiqudation(Responses.Liquidation.Liquidation x, Responses.BitmexAction action)
         {
             Log.Information( $"Liquadation Action: {action}, OrderID: {x.OrderID}, Symbol: {x.Symbol}, Side: {x.Side}, Price: {x.Price}, LeavesQty: {x.leavesQty}");
-            var currTime = DateTime.Now.ToUniversalTime();
-            if(action == Responses.BitmexAction.Insert){
-                var dbLiquidation = new EFCoreSqlite.Liquidation{
-                    OrderID = x.OrderID,
-                    DateAdded = currTime,
-                    Symbol = x.Symbol,
-                    Side = x.Side?.ToString(),
-                    Price = x.Price,
-                    leavesQty = x.leavesQty
-                };
-
-                using(var db = new BitmexDbContext()){
-                    db.Liquidations.Add(dbLiquidation);
-                    db.SaveChanges();
-                }
-            }
-            else if(action == Responses.BitmexAction.Update){
-                using (var db = new BitmexDbContext()){
-                    var updateDbObj = db.Liquidations.Where(y => y.OrderID == x.OrderID).FirstOrDefault();
-                    if(updateDbObj != null){
-                        updateDbObj.LatestPrice = x.Price ?? updateDbObj.LatestPrice;
-                        updateDbObj.lastLeavesQty = x.leavesQty ?? updateDbObj.lastLeavesQty;
-                        updateDbObj.numUpdates = (updateDbObj.numUpdates ?? 0)  + 1;
-                        db.SaveChanges();
-                    }
-                }
-            }
-            else if(action == Responses.BitmexAction.Delete){
-                using (var db = new BitmexDbContext()){
-                    var updateDbObj = db.Liquidations.Where(y => y.OrderID == x.OrderID).FirstOrDefault();
-                    if(updateDbObj != null){
-                        updateDbObj.deletedTime = currTime;
-                        db.SaveChanges();
-                    }
-                }
-            }
+            Repository.AddLiquidation(x, action);
         }
 
         private static void OutputTrade(Responses.Trades.Trade x)
         {
             Log.Information($"Trade {x.Symbol} executed. Time: {x.Timestamp:mm:ss.fff}, [{x.Side}] Amount: {x.Size}, " +
-                            $"Price: {x.Price}");
-            
-            if(x.Size >= 10000)
-            {
-                var dbTrade = new EFCoreSqlite.Trade{
-                    Timestamp = x.Timestamp,
-                    Symbol = x.Symbol,
-                    Side = x.Side.ToString(),
-                    Size = x.Size,
-                    Price = x.Price
-                };
-                using(var db = new BitmexDbContext())
-                {
-                    var existingTrade = db.Trades.Where(y => y.Timestamp == x.Timestamp && y.Symbol == x.Symbol).FirstOrDefault();
-
-                    if(existingTrade == null)
-                    {
-                        db.Trades.Add(dbTrade);
-                    }
-                    else
-                    {
-                        existingTrade.Size += x.Size;
-                    }                   
-                    db.SaveChanges();
-                }
-
-            }
-
+                            $"Price: {x.Price}");   
+            Repository.AddTrade(x);
         }
 
         private static void InitLogging()
