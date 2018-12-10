@@ -16,6 +16,24 @@ namespace EFCoreSqlite.Migrations
             modelBuilder
                 .HasAnnotation("ProductVersion", "2.1.4-rtm-31024");
 
+            modelBuilder.Entity("Bitmex.Client.Websocket.EFCoreSqlite.BookLevel", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<double?>("Price");
+
+                    b.Property<string>("Side");
+
+                    b.Property<long?>("Size");
+
+                    b.Property<string>("Symbol");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("BookLevels");
+                });
+
             modelBuilder.Entity("Bitmex.Client.Websocket.EFCoreSqlite.Liquidation", b =>
                 {
                     b.Property<string>("OrderID")

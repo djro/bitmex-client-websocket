@@ -6,6 +6,7 @@ namespace Bitmex.Client.Websocket.EFCoreSqlite
     {
         public DbSet<Liquidation> Liquidations {get; set;}
         public DbSet<Trade> Trades {get;set;}
+        public DbSet<BookLevel> BookLevels {get;set;}
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Trade>()

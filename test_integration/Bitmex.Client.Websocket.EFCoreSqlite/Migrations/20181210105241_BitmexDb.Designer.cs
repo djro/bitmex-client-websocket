@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EFCoreSqlite.Migrations
 {
     [DbContext(typeof(BitmexDbContext))]
-    [Migration("20181204074145_BitmexDb")]
+    [Migration("20181210105241_BitmexDb")]
     partial class BitmexDb
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -17,6 +17,24 @@ namespace EFCoreSqlite.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "2.1.4-rtm-31024");
+
+            modelBuilder.Entity("Bitmex.Client.Websocket.EFCoreSqlite.BookLevel", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<double?>("Price");
+
+                    b.Property<string>("Side");
+
+                    b.Property<long?>("Size");
+
+                    b.Property<string>("Symbol");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("BookLevels");
+                });
 
             modelBuilder.Entity("Bitmex.Client.Websocket.EFCoreSqlite.Liquidation", b =>
                 {
