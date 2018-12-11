@@ -24,6 +24,7 @@ namespace Bitmex.Client.Websocket.Sample
         static void Main(string[] args)
         {
             InitLogging();
+            
 
             AppDomain.CurrentDomain.ProcessExit += CurrentDomainOnProcessExit;
             AssemblyLoadContext.Default.Unloading += DefaultOnUnloading;
@@ -54,6 +55,7 @@ namespace Bitmex.Client.Websocket.Sample
                     client.Streams.InfoStream.Subscribe(info =>
                     {
                         Log.Information($"Reconnection happened, Message: {info.Info}, Version: {info.Version:D}");
+                        //Repository.InitRepository();
                         SendSubscriptionRequests(client).Wait();
                     });   
 
@@ -74,7 +76,7 @@ namespace Bitmex.Client.Websocket.Sample
         private static async Task SendSubscriptionRequests(BitmexWebsocketClient client)
         {
             await client.Send(new PingRequest());
-            //await client.Send(new BookSubscribeRequest("XBTUSD"));
+            await client.Send(new BookSubscribeRequest("XBTUSD"));
             await client.Send(new TradesSubscribeRequest("XBTUSD"));
             //await client.Send(new TradeBinSubscribeRequest("1m", "XBTUSD"));
             //await client.Send(new TradeBinSubscribeRequest("5m", "XBTUSD"));
@@ -131,8 +133,7 @@ namespace Bitmex.Client.Websocket.Sample
             );
 
             client.Streams.BookStream.Subscribe(book =>
-                book.Data.Take(100).ToList().ForEach(x => Log.Information(
-                    $"Book | {book.Action} pair: {x.Symbol}, price: {x.Price}, amount {x.Size}, side: {x.Side}"))
+                book.Data.ToList().ForEach(x => OutputOrderBook(x, book.Action))
             );
 
             client.Streams.QuoteStream.Subscribe(y =>
@@ -151,6 +152,12 @@ namespace Bitmex.Client.Websocket.Sample
                         $"Close: {x.Close}, Volume: {x.Volume}, Trades: {x.Trades}"))
             );
 
+        }
+
+        private static void OutputOrderBook(Responses.Books.BookLevel x, Responses.BitmexAction action)
+        {
+            Log.Information( $"Book | {action} pair: {x.Symbol}, price: {x.Price}, amount {x.Size}, side: {x.Side}");
+            Repository.UpdateOrderBook(x, action);
         }
 
         private static void OutputLiqudation(Responses.Liquidation.Liquidation x, Responses.BitmexAction action)

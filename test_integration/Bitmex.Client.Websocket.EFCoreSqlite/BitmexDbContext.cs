@@ -6,7 +6,8 @@ namespace Bitmex.Client.Websocket.EFCoreSqlite
     {
         public DbSet<Liquidation> Liquidations {get; set;}
         public DbSet<Trade> Trades {get;set;}
-        public DbSet<BookLevel> BookLevels {get;set;}
+        
+        //use this method when table has combined key instead of annotaions
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Trade>()

@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Bitmex.Client.Websocket.EFCoreSqlite
 {
-    public class Repository
+    public static class Repository
     {
         public static void AddTrade(Responses.Trades.Trade x)
         {
@@ -73,6 +73,60 @@ namespace Bitmex.Client.Websocket.EFCoreSqlite
                         db.SaveChanges();
                     }
                 }
+            }
+        }
+
+        public static void UpdateOrderBook(Responses.Books.BookLevel x, Responses.BitmexAction action)
+        {
+
+
+            using(var db = new BitmexBookDbContext())
+            {
+                var dbBookLevel = new BookLevel
+                {
+                    Id = x.Id,
+                    Symbol = x.Symbol,
+                    Side = x.Side.ToString(),
+                    Size = x.Size,
+                    Price = x.Price
+                    
+                };
+                if(action == Responses.BitmexAction.Partial)
+                {
+                    var selectedObj = db.BookLevels.Where(y => y.Id == x.Id).FirstOrDefault();
+
+                    if(selectedObj != null)
+                    {
+                        selectedObj.Side = dbBookLevel.Side;
+                        selectedObj.Size = dbBookLevel.Size;    
+                    }
+                    else 
+                    {
+                        db.BookLevels.Add(dbBookLevel);    
+                    }
+                }
+                else if(action == Responses.BitmexAction.Insert)
+                {
+
+                    db.BookLevels.Add(dbBookLevel);
+                }
+                else if(action == Responses.BitmexAction.Update){
+                    var updateDbObj = db.BookLevels.Where(y => y.Id == x.Id).FirstOrDefault();
+
+                    if(updateDbObj != null){
+                        updateDbObj.Side = dbBookLevel.Side;
+                        updateDbObj.Size = dbBookLevel.Size;
+                    }
+                }
+                else if(action == Responses.BitmexAction.Delete)
+                {
+                    var deleteDbObj = db.BookLevels.Where(y => y.Id == x.Id).FirstOrDefault();
+                    if(deleteDbObj != null)
+                    {
+                        db.BookLevels.Remove(deleteDbObj);
+                    }
+                }
+                db.SaveChanges();
             }
         }
     }
