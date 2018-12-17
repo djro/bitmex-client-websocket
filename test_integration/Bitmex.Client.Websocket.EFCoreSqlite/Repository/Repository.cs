@@ -1,6 +1,7 @@
 using Bitmex.Client.Websocket.Responses.Trades;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Bitmex.Client.Websocket.EFCoreSqlite
@@ -76,56 +77,52 @@ namespace Bitmex.Client.Websocket.EFCoreSqlite
             }
         }
 
-        public static void UpdateOrderBook(Responses.Books.BookLevel x, Responses.BitmexAction action)
+        public static void UpdateOrderBook(List<Responses.Books.BookLevel> bookLevels, Responses.BitmexAction action)
         {
 
 
             using(var db = new BitmexBookDbContext())
             {
-                var dbBookLevel = new BookLevel
-                {
-                    Id = x.Id,
-                    Symbol = x.Symbol,
-                    Side = x.Side.ToString(),
-                    Size = x.Size,
-                    Price = x.Price
-                    
-                };
+
                 if(action == Responses.BitmexAction.Partial)
                 {
-                    var selectedObj = db.BookLevels.Where(y => y.Id == x.Id).FirstOrDefault();
-
-                    if(selectedObj != null)
-                    {
-                        selectedObj.Side = dbBookLevel.Side;
-                        selectedObj.Size = dbBookLevel.Size;    
-                    }
-                    else 
-                    {
-                        db.BookLevels.Add(dbBookLevel);    
-                    }
+                    //assumming this only occurs at connection initialization
+                    var wipeRecords = db.BookLevels.Where(x => true);
+                    db.BookLevels.RemoveRange(wipeRecords);
                 }
-                else if(action == Responses.BitmexAction.Insert)
+                bookLevels.ForEach(x => 
                 {
-
-                    db.BookLevels.Add(dbBookLevel);
-                }
-                else if(action == Responses.BitmexAction.Update){
-                    var updateDbObj = db.BookLevels.Where(y => y.Id == x.Id).FirstOrDefault();
-
-                    if(updateDbObj != null){
-                        updateDbObj.Side = dbBookLevel.Side;
-                        updateDbObj.Size = dbBookLevel.Size;
-                    }
-                }
-                else if(action == Responses.BitmexAction.Delete)
-                {
-                    var deleteDbObj = db.BookLevels.Where(y => y.Id == x.Id).FirstOrDefault();
-                    if(deleteDbObj != null)
+                    if(action == Responses.BitmexAction.Partial || action == Responses.BitmexAction.Insert)
                     {
-                        db.BookLevels.Remove(deleteDbObj);
+                        var dbBookLevel = new BookLevel
+                        {
+                            Id = x.Id,
+                            Symbol = x.Symbol,
+                            Side = x.Side.ToString(),
+                            Size = x.Size,
+                            Price = x.Price
+                            
+                        };
+                        db.BookLevels.Add(dbBookLevel);
                     }
-                }
+                    else if(action == Responses.BitmexAction.Update)
+                    {
+                        var updateDbObj = db.BookLevels.Where(y => y.Id == x.Id).FirstOrDefault();
+
+                        if(updateDbObj != null){
+                            updateDbObj.Side = x.Side.ToString();
+                            updateDbObj.Size = x.Size;
+                        }
+                    }
+                    else if(action == Responses.BitmexAction.Delete)
+                    {
+                        var deleteDbObj = db.BookLevels.Where(y => y.Id == x.Id).FirstOrDefault();
+                        if(deleteDbObj != null)
+                        {
+                            db.BookLevels.Remove(deleteDbObj);
+                        }
+                    }
+                });
                 db.SaveChanges();
             }
         }

@@ -11,6 +11,7 @@ using Bitmex.Client.Websocket.Websockets;
 using Serilog;
 using Serilog.Events;
 using Bitmex.Client.Websocket.EFCoreSqlite;
+using System.Collections.Generic;
 
 namespace Bitmex.Client.Websocket.Sample
 {
@@ -77,11 +78,11 @@ namespace Bitmex.Client.Websocket.Sample
         {
             await client.Send(new PingRequest());
             await client.Send(new BookSubscribeRequest("XBTUSD"));
-            await client.Send(new TradesSubscribeRequest("XBTUSD"));
+            //await client.Send(new TradesSubscribeRequest("XBTUSD"));
             //await client.Send(new TradeBinSubscribeRequest("1m", "XBTUSD"));
             //await client.Send(new TradeBinSubscribeRequest("5m", "XBTUSD"));
             //await client.Send(new QuoteSubscribeRequest("XBTUSD"));
-            await client.Send(new LiquidationSubscribeRequest());
+            //await client.Send(new LiquidationSubscribeRequest());
 
             if (!string.IsNullOrWhiteSpace(API_SECRET))
                 await client.Send(new AuthenticationRequest(API_KEY, API_SECRET));
@@ -133,7 +134,7 @@ namespace Bitmex.Client.Websocket.Sample
             );
 
             client.Streams.BookStream.Subscribe(book =>
-                book.Data.ToList().ForEach(x => OutputOrderBook(x, book.Action))
+                 OutputOrderBook(book.Data.ToList(), book.Action)
             );
 
             client.Streams.QuoteStream.Subscribe(y =>
@@ -154,10 +155,14 @@ namespace Bitmex.Client.Websocket.Sample
 
         }
 
-        private static void OutputOrderBook(Responses.Books.BookLevel x, Responses.BitmexAction action)
+        private static void OutputOrderBook(List<Responses.Books.BookLevel> bookLevels, Responses.BitmexAction action)
         {
-            Log.Information( $"Book | {action} pair: {x.Symbol}, price: {x.Price}, amount {x.Size}, side: {x.Side}");
-            Repository.UpdateOrderBook(x, action);
+
+            bookLevels.Take(100).ToList().ForEach(x =>
+            Log.Information( $"Book | {action} pair: {x.Symbol}, price: {x.Price}, amount {x.Size}, side: {x.Side}")
+
+            );
+            Repository.UpdateOrderBook(bookLevels, action);
         }
 
         private static void OutputLiqudation(Responses.Liquidation.Liquidation x, Responses.BitmexAction action)
