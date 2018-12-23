@@ -32,20 +32,18 @@ namespace Bitmex.Client.Websocket.EFCoreSqlite
                         };
                         using(var db = new BitmexDbContext())
                         {
-                            try
-                            {
-                                db.Trades.Add(dbTrade);
-                            }
-                            catch(Exception ex)
-                            {
-                                var existingTrade = db.Trades.Where(y => y.Timestamp == x.Timestamp && y.Symbol == x.Symbol).FirstOrDefault();
-                                if(existingTrade != null)
-                                {
-                                   existingTrade.Size += x.Size;
-                                }
 
-                            }                       
-                 
+                            var existingTrade = db.Trades.Any(y => y.Timestamp == x.Timestamp && y.Symbol == x.Symbol);
+                            if(existingTrade)
+                            {
+                                var tradeToUpdate = db.Trades.First(y => y.Timestamp == x.Timestamp && y.Symbol == x.Symbol);
+                                tradeToUpdate.Size += x.Size;
+                            }
+                            else
+                            {
+                                db.Trades.Add(dbTrade); 
+                            }
+                            
                             db.SaveChanges();
                         }
         
