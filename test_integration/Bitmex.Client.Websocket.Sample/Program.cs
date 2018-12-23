@@ -77,12 +77,12 @@ namespace Bitmex.Client.Websocket.Sample
         private static async Task SendSubscriptionRequests(BitmexWebsocketClient client)
         {
             await client.Send(new PingRequest());
-            await client.Send(new BookSubscribeRequest("XBTUSD"));
-            //await client.Send(new TradesSubscribeRequest("XBTUSD"));
+            //await client.Send(new BookSubscribeRequest("XBTUSD"));
+            await client.Send(new TradesSubscribeRequest("XBTUSD"));
             //await client.Send(new TradeBinSubscribeRequest("1m", "XBTUSD"));
             //await client.Send(new TradeBinSubscribeRequest("5m", "XBTUSD"));
             //await client.Send(new QuoteSubscribeRequest("XBTUSD"));
-            //await client.Send(new LiquidationSubscribeRequest());
+            await client.Send(new LiquidationSubscribeRequest());
 
             if (!string.IsNullOrWhiteSpace(API_SECRET))
                 await client.Send(new AuthenticationRequest(API_KEY, API_SECRET));
@@ -129,8 +129,7 @@ namespace Bitmex.Client.Websocket.Sample
             );
 
             client.Streams.TradesStream.Subscribe(y =>
-                y.Data.ToList().ForEach(x =>
-                    OutputTrade(x))
+                OutputTrade(y.Data.ToList())
             );
 
             client.Streams.BookStream.Subscribe(book =>
@@ -171,11 +170,12 @@ namespace Bitmex.Client.Websocket.Sample
             Repository.AddLiquidation(x, action);
         }
 
-        private static void OutputTrade(Responses.Trades.Trade x)
+        private static void OutputTrade(List<Responses.Trades.Trade> trades)
         {
+            trades.ForEach(x =>
             Log.Information($"Trade {x.Symbol} executed. Time: {x.Timestamp:mm:ss.fff}, [{x.Side}] Amount: {x.Size}, " +
-                            $"Price: {x.Price}");   
-            Repository.AddTrade(x);
+                            $"Price: {x.Price}"));   
+            Repository.AddTrade(trades);
         }
 
         private static void InitLogging()

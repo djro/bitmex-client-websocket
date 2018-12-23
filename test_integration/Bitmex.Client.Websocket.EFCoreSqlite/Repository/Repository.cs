@@ -8,31 +8,52 @@ namespace Bitmex.Client.Websocket.EFCoreSqlite
 {
     public static class Repository
     {
-        public static void AddTrade(Responses.Trades.Trade x)
+        public static void AddTrade(List<Responses.Trades.Trade> trades)
         {
-            if(x.Size >= 10000)
+            try
             {
-                var dbTrade = new EFCoreSqlite.Trade{
-                    Timestamp = x.Timestamp,
-                    Symbol = x.Symbol,
-                    Side = x.Side.ToString(),
-                    Size = x.Size,
-                    Price = x.Price
-                };
-                using(var db = new BitmexDbContext())
-                {
-                    var existingTrade = db.Trades.Where(y => y.Timestamp == x.Timestamp && y.Symbol == x.Symbol).FirstOrDefault();
+                var gTrades = trades.GroupBy(x => new {x.Timestamp, x.Symbol, x.Side, x.Price} ).Select(g => new EFCoreSqlite.Trade{
+                    Timestamp = g.Key.Timestamp,
+                    Symbol = g.Key.Symbol,
+                    Size = g.Sum(x => x.Size),
+                    Side = g.Key.Side.ToString(),
+                    Price = g.Key.Price
 
-                    if(existingTrade == null)
+                }).ToList();
+                gTrades.ForEach(x =>{
+                    if(x.Size >= 10000)
                     {
-                        db.Trades.Add(dbTrade);
+                        var dbTrade = new EFCoreSqlite.Trade{
+                            Timestamp = x.Timestamp,
+                            Symbol = x.Symbol,
+                            Side = x.Side.ToString(),
+                            Size = x.Size,
+                            Price = x.Price
+                        };
+                        using(var db = new BitmexDbContext())
+                        {
+                            try
+                            {
+                                db.Trades.Add(dbTrade);
+                            }
+                            catch(Exception ex)
+                            {
+                                var existingTrade = db.Trades.Where(y => y.Timestamp == x.Timestamp && y.Symbol == x.Symbol).FirstOrDefault();
+                                if(existingTrade != null)
+                                {
+                                   existingTrade.Size += x.Size;
+                                }
+
+                            }                       
+                 
+                            db.SaveChanges();
+                        }
+        
                     }
-                    else
-                    {
-                        existingTrade.Size += x.Size;
-                    }                   
-                    db.SaveChanges();
-                }
+                });
+                
+            }
+            catch(Exception ex) {
 
             }
         }
