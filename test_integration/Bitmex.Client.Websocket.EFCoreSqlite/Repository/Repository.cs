@@ -18,7 +18,7 @@ namespace Bitmex.Client.Websocket.EFCoreSqlite
                     Size = g.Sum(x => x.Size),
                     Side = g.Key.Side.ToString(),
                     Price = g.Key.Price
-
+                    
                 }).ToList();
                 gTrades.ForEach(x =>{
                     if(x.Size >= 10000)
@@ -37,7 +37,11 @@ namespace Bitmex.Client.Websocket.EFCoreSqlite
                             if(existingTrade)
                             {
                                 var tradeToUpdate = db.Trades.First(y => y.Timestamp == x.Timestamp && y.Symbol == x.Symbol);
-                                tradeToUpdate.Size += x.Size;
+
+                                var newSize = tradeToUpdate.Size + x.Size;                   
+                                var newPrice = tradeToUpdate.Price*(tradeToUpdate.Size/newSize) + x.Price*(x.Size/newSize);
+                                tradeToUpdate.Size = newSize;
+                                tradeToUpdate.Price = newPrice;
                             }
                             else
                             {
