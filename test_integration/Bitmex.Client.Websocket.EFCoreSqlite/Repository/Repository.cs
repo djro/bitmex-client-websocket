@@ -21,7 +21,7 @@ namespace Bitmex.Client.Websocket.EFCoreSqlite
                     
                 }).ToList();
                 gTrades.ForEach(x =>{
-                    if(x.Size >= 10000)
+                    if(x.Size >= 1000)
                     {
                         var dbTrade = new EFCoreSqlite.Trade{
                             Timestamp = x.Timestamp,
