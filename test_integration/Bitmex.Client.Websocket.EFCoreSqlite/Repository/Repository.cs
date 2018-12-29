@@ -18,6 +18,7 @@ namespace Bitmex.Client.Websocket.EFCoreSqlite
                     Size = g.Sum(x => x.Size),
                     Side = g.Key.Side.ToString(),
                     Price = g.Key.Price
+                    //,TrdMatchId = string.Join(",", g.Select(x => x.TrdMatchId))
                     
                 }).ToList();
                 gTrades.ForEach(x =>{
@@ -29,6 +30,7 @@ namespace Bitmex.Client.Websocket.EFCoreSqlite
                             Side = x.Side.ToString(),
                             Size = x.Size,
                             Price = x.Price
+                            //,TrdMatchId = x.TrdMatchId
                         };
                         using(var db = new BitmexDbContext())
                         {
@@ -37,11 +39,12 @@ namespace Bitmex.Client.Websocket.EFCoreSqlite
                             if(existingTrade)
                             {
                                 var tradeToUpdate = db.Trades.First(y => y.Timestamp == x.Timestamp && y.Symbol == x.Symbol);
-
                                 var newSize = tradeToUpdate.Size + x.Size;                   
-                                var newPrice = tradeToUpdate.Price*(tradeToUpdate.Size/newSize) + x.Price*(x.Size/newSize);
+                                var newPrice = tradeToUpdate.Price*((double)tradeToUpdate.Size/newSize) + x.Price*((double)x.Size/newSize);
+                                
                                 tradeToUpdate.Size = newSize;
                                 tradeToUpdate.Price = newPrice;
+                                //tradeToUpdate.TrdMatchId = tradeToUpdate.TrdMatchId + ',' + x.TrdMatchId;
                             }
                             else
                             {
